@@ -81,8 +81,47 @@ object Usuarios {
         )
     }
 
+    fun tryRecuperaPassword(rut: String, nroDocumento: String, plainPassword: String, plainConfirmPassword: String) {
+        val emailRegex = "^[A-Za-z](.*)([@]{1})(.+)(\\.)(.+)"
+        val passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=])(?=\\S+\$).{6,}\$"
+
+        if (rut.isBlank()) throw Exception("RUT no puede estar vacío")
+        if (nroDocumento.isBlank()) throw Exception("Número de documento no puede estar vacío")
+        if(plainPassword != plainConfirmPassword) throw Exception("Las contraseñas no coinciden")
+        if (plainPassword.length < 6) throw Exception("Password debe tener al menos 6 caracteres")
+        if (!plainPassword.matches(passwordRegex.toRegex())) throw Exception("Password no es válido")
+
+        val usuario = getUsuarioByRut(rut) ?: throw Exception("Usuario no encontrado")
+
+        if (usuario.nroDocumento != nroDocumento) throw Exception("Número de documento no coincide")
+
+        usuarios.removeIf {
+            it.rut == rut
+        }
+
+        val hashedPassword = BCrypt.withDefaults().hashToString(
+            12,
+            plainPassword.toCharArray()
+        )
+
+
+        usuarios.add(
+            Usuario(
+                nombre = usuario.nombre,
+                rut = rut,
+                nroDocumento = nroDocumento,
+                email = usuario.email,
+                hashedPassword = hashedPassword
+            )
+        )
+    }
+
     private fun getUsuarioByEmail(email: String): Usuario? {
         return usuarios.find { it.email == email }
+    }
+
+    private fun getUsuarioByRut(rut: String): Usuario? {
+        return usuarios.find { it.rut == rut }
     }
 
     fun tryLoginWithEmailAndPlainPassword(email: String, plainPassword: String): Usuario {

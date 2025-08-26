@@ -1,7 +1,6 @@
 package cl.duoc.darmijo.screens
 
 import android.util.Log
-import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,15 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import cl.duoc.darmijo.R
-import cl.duoc.darmijo.data.Usuario
 import cl.duoc.darmijo.data.Usuarios
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -39,14 +35,12 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 
-@Preview(showBackground = true, name = "Login Screen")
 @Composable
-fun LoginScreen(navController: NavController, modifier: Modifier) {
-    val usuario = Usuarios.getRandomUsuario();
-    var email by remember { mutableStateOf(usuario.email) }
+fun RecuperaPasswordScreen(navController: NavController,  modifier: Modifier = Modifier) {
+    var rut by remember { mutableStateOf("5-5") }
+    var nroDocumento by remember { mutableStateOf("789456123") }
     var password by remember { mutableStateOf("Password1@") }
-    val context = LocalContext.current
-
+    var confirmPassword by remember { mutableStateOf("Password1@") }
     // Implement your login screen UI here
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
@@ -58,7 +52,7 @@ fun LoginScreen(navController: NavController, modifier: Modifier) {
             composition,
             iterations = LottieConstants.IterateForever,
             isPlaying = true,
-            speed = .73f,
+            speed = 1.0f,
             restartOnPlay = false
         )
         LottieAnimation(
@@ -66,46 +60,66 @@ fun LoginScreen(navController: NavController, modifier: Modifier) {
             progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(104.dp)
+                .height(54.dp)
         )
         Text(
-            text = "Bienvenido a esta aplicación",
+            text = "Recupera Contraseña!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
         )
-        Spacer(modifier = Modifier.height(30.dp))
+
+        Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            shape = RoundedCornerShape(8.dp),
-            label = { Text("Correo") },
+            value = rut,
+            onValueChange = { rut = it },
+            label = { Text("RUT") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = nroDocumento,
+            onValueChange = { nroDocumento = it },
+            label = { Text("Nro. Documento") },
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            shape = RoundedCornerShape(8.dp),
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            visualTransformation = PasswordVisualTransformation()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Repite Contraseña") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                Log.d("LoginScreen", "email: $email")
                 try {
-                    val usuario = Usuarios.tryLoginWithEmailAndPlainPassword(email, password)
-                    navController.navigate(route = "home/${usuario.uid}") {
-                        popUpTo("login")
+                    Usuarios.tryRecuperaPassword(
+                        rut = rut,
+                        nroDocumento = nroDocumento,
+                        plainPassword = password,
+                        plainConfirmPassword = confirmPassword
+                    )
+
+                    navController.navigate("login") {
+                        popUpTo("registro")
                     }
+                    Log.d("RegistroScreen", "Registro exitoso")
                 } catch (e: Exception) {
-                    Log.e("LoginScreen", "Error login: ${e.message}")
-                    val toast = Toast.makeText(context, "Error login: ${e.message}", Toast.LENGTH_SHORT)
-                    toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
-                    toast.show();
+                    Toast.makeText(
+                        navController.context,
+                        "Error en registro: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    Log.e("RegistroScreen", "Error en registro: ${e.message}")
                 }
             },
             modifier = Modifier
@@ -116,39 +130,7 @@ fun LoginScreen(navController: NavController, modifier: Modifier) {
                 containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
-            Text(text = "Ingresar")
+            Text(text = "Cambiar Contraseña")
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                navController.navigate(route = "recover"){}
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Text(text = "Recupera Contraseña")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                navController.navigate(route = "registro"){}
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Text(text = "Registrarse")
-        }
-        // Add TextFields for username and password, and a Button to submit
     }
-
 }

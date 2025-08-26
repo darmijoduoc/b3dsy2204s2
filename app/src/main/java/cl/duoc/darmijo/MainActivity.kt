@@ -17,12 +17,11 @@ import androidx.navigation.navArgument
 import cl.duoc.darmijo.screens.HomeScreen
 import cl.duoc.darmijo.ui.theme.AppTheme
 import cl.duoc.darmijo.screens.LoginScreen
+import cl.duoc.darmijo.screens.RecuperaPasswordScreen
 import cl.duoc.darmijo.screens.RegistroScreen
 import cl.duoc.darmijo.ui.theme.Typography
 
 class MainActivity : ComponentActivity() {
-
-
     private val HighContrastColorScheme = darkColorScheme(
         primary = Color.Black,
         onPrimary = Color.White,
@@ -45,6 +44,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = "registro") {
                             RegistroScreen(navController, Modifier.padding(innerPadding))
+                        }
+                        composable(route = "recover") {
+                            RecuperaPasswordScreen(navController, Modifier.padding(innerPadding))
                         }
                         composable(
                             route = "home/{uid}",
